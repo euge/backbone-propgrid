@@ -4,10 +4,6 @@ var Propgrid = Backbone.View.extend({
 
   attributes : { "class" : "propgrid" },
 
-  initialize : function() {
-
-  },
-
   render : function() {
     for (var attr in this.model.attributes) {
       var itemView = new Propgrid.Item({ model : this.model, attr : attr });
@@ -24,11 +20,9 @@ var Propgrid = Backbone.View.extend({
 
     // make the next input enter its edit mode if it exists
     if (next) {
-      next._onEditMode();
+      next.edit();
     }
   }
-
-
 
 });
 
@@ -37,63 +31,74 @@ Propgrid.Item = Backbone.View.extend({
   tagName : "tr",
 
   initialize : function() {
-    this.attr = this.options.attr;
+    this._showView = new Propgrid.Text.Show({ model : this.model, attr : this.options.attr });
+    this._editView = new Propgrid.Text.Edit({ model : this.model, attr : this.options.attr });
+
+    this._editView.on("show", this.show, this);
+    this._showView.on("edit", this.edit, this);
+    this._editView.on("nextItem", this._onNextItem, this);
   },
 
   render : function() {
-    this.$el.append("<td class='attrName'></td><td class='attrValue'></td>");
-    this.$(".attrName").html(this.attr)
+    this.$el.append("<td class='attrName'>" + this.options.attr + "</td><td class='attrValue'></td>");
+    this.$(".attrValue").
+      append(this._showView.render().$el).
+      append(this._editView.render().$el);
 
-    this._onShowMode();
+    this.show();
     return this;
   },
 
-  _onEditMode : function() {
-    if (this.showView) {
-      this.showView.remove();
-      this.showView.off();
-    }
-
-    this.editView = new Propgrid.Text.Edit({ model : this.model, attr : this.attr });
-    this.editView.on("show", this._onShowMode, this);
-    this.editView.on("nextItem", this._onNextItem, this);
-
-    this.$(".attrValue").html(this.editView.render().$el);
-    this.editView.focus();
+  edit : function() {
+    this._showView.hide();
+    this._editView.render().show().focus();
   },
 
-  _onShowMode : function() {
-    if (this.editView) {
-      this.editView.remove();
-      this.editView.off();
-    }
-
-    this.showView = new Propgrid.Text.Show({ model : this.model, attr : this.attr });
-    this.showView.on("edit", this._onEditMode, this);
-    this.$(".attrValue").append(this.showView.render().$el);
+  show : function() {
+    this._editView.hide();
+    this._showView.render().show();
   },
 
   _onNextItem : function() {
-    this._onShowMode();
+    this.show();
     this.trigger("nextItem", this);
   }
 
 });
 
+Propgrid.InputBase = Backbone.View.extend({
+
+  hide : function() {
+    this.$el.hide();
+    return this;
+  },
+
+  show : function() {
+    this.$el.show();
+    return this;
+  },
+
+  value : function(newValue) {
+    if (_.isUndefined(newValue)) {
+      // getter
+      return this.model.get(this.options.attr);
+    } else {
+      // setter
+      this.model.set(this.options.attr, newValue);
+    }
+  }
+
+});
+
 Propgrid.Text = {};
-Propgrid.Text.Show = Backbone.View.extend({
+Propgrid.Text.Show = Propgrid.InputBase.extend({
 
   events : {
     "click" : "_onClick"
   },
 
-  initialize : function() {
-    this.attr = this.options.attr;
-    this.value = this.model.get(this.attr);
-  },
-
   render : function() {
-    this.$el.html(this.value);
+    this.$el.html(this.value());
     return this;
   },
 
@@ -104,7 +109,7 @@ Propgrid.Text.Show = Backbone.View.extend({
 
 });
 
-Propgrid.Text.Edit = Backbone.View.extend({
+Propgrid.Text.Edit = Propgrid.InputBase.extend({
 
   events : {
     "blur input" : "_onBlur",
@@ -112,29 +117,26 @@ Propgrid.Text.Edit = Backbone.View.extend({
     "keydown input" : "_onKeyDown"
   },
 
-  initialize : function() {
-    this.attr = this.options.attr;
-    this.value = this.model.get(this.attr);
-  },
-
   render : function() {
-    this.$el.html("<input type='text' value='" + this.value + "'/>");
+    this.$el.html("<input type='text' value='" + this.value() + "'/>");
     return this;
   },
 
   _onBlur : function(event) {
     // set the new value and leave the edit view
-    this._saveValue();
+    this._save();
     this.trigger("show");
     return false;
   },
 
   _onKeyUp : function(event) {
     if (event.keyCode === 27) {
+      // handle the esc key event
       this.trigger("show");
       return false;
     } else if (event.keyCode === 13) {
-      this._saveValue();
+      // handle the enter key event
+      this._save();
       this.trigger("show");
       return false;
     }
@@ -142,18 +144,20 @@ Propgrid.Text.Edit = Backbone.View.extend({
 
   _onKeyDown : function(event) {
     if (event.keyCode === 9) {
-      this._saveValue();
+      // handle the tab key event
+      this._save();
       this.trigger("nextItem");
       return false;
     }
   },
 
-  _saveValue : function() {
-    this.model.set(this.attr, this.$("input").val());
+  _save : function() {
+    this.value(this.$("input").val());
   },
 
   focus : function() {
     this.$("input").focus();
+    return this;
   }
 
 });
