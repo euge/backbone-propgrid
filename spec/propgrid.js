@@ -15,7 +15,7 @@ describe("PropertyGrid", function() {
       return $(this).text();
     });
     
-    expect(propNames.get().sort()).toEqual(["Name", "Age", "State"].sort());
+    expect(propNames.get().sort()).to.equalAsSets(["Name", "Age", "State"].sort());
   });
   
   it("should create an editor for specific model attributes", function() {
@@ -27,7 +27,7 @@ describe("PropertyGrid", function() {
       return $(this).text();
     });
     
-    expect(propNames.get().sort()).toEqual(["Name", "Age"].sort());
+    expect(propNames.get().sort()).to.equalAsSets(["Name", "Age"].sort());
   });
   
 });

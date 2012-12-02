@@ -43,6 +43,18 @@ module.exports = function(grunt) {
       ],
       specs : 'spec/**/*.js'
     },
+    mocha: {
+      all: {
+        src: [ 'spec/runner.html' ],
+
+        // mocha options
+        mocha: {
+        },
+
+        // Indicates whether 'mocha.run()' should be executed in 'mocha-helper.js'
+        run: true
+      }
+    },
     jshint: {
       options: {
         curly: true,
@@ -74,7 +86,7 @@ module.exports = function(grunt) {
   });
 
   // Default task.
-  grunt.registerTask('default', 'lint jasmine');
+  grunt.registerTask('default', 'lint mocha');
   grunt.loadNpmTasks('grunt-jasmine-runner');
-
+  grunt.loadNpmTasks('grunt-mocha');
 };
