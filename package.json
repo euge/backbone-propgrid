@@ -2,5 +2,9 @@
   "name": "propgrid",
   "description": "propgrid",
   "version": "0.0.1",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "grunt-jasmine-runner": "~0.6.0",
+    "grunt-mocha": "~0.1.7"
+  }
 }
