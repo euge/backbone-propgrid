@@ -4,23 +4,15 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
     meta: {
-      version: '0.1.0',
-      banner: '/*! PROJECT_NAME - v<%= meta.version %> - ' +
-        '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
-        '* http://PROJECT_WEBSITE/\n' +
-        '* Copyright (c) <%= grunt.template.today("yyyy") %> ' +
-        'YOUR_NAME; Licensed MIT */'
+      version: '0.1.0'
     },
     lint: {
       files: ['grunt.js', 'lib/*.js', 'test/**/*.js']
     },
-    qunit: {
-      files: ['test/**/*.html']
-    },
     concat: {
       dist: {
-        src: ['<banner:meta.banner>', '<file_strip_banner:lib/FILE_NAME.js>'],
-        dest: 'dist/FILE_NAME.js'
+        src: ['lib/propgrid.js', 'lib/item.js', 'lib/input_base.js', 'lib/show_base.js', 'lib/text.js', 'lib/select.js'],
+        dest: 'dist/propgrid_dist.js'
       }
     },
     min: {
@@ -30,8 +22,8 @@ module.exports = function(grunt) {
       }
     },
     watch: {
-      files: '<config:lint.files>',
-      tasks: 'lint qunit'
+      files: '<config:concat.dist.src>',
+      tasks: 'concat'
     },
     jasmine : {
       src : [ 
@@ -79,7 +71,8 @@ module.exports = function(grunt) {
         beforeEach : false,
         expect : false,
         it : false,
-        spyOn : false
+        spyOn : false,
+        Propgrid : true
       }
     },
     uglify: {}
