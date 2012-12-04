@@ -1,6 +1,16 @@
 /*global module:false*/
 module.exports = function(grunt) {
 
+  var _inspect = require("sys").inspect;
+
+  function inspect(obj) {
+    log(_inspect(obj));
+  }
+
+  function log(stuff) {
+    grunt.log.writeln(stuff)
+  }
+
   // Project configuration.
   grunt.initConfig({
     meta: {
@@ -11,7 +21,7 @@ module.exports = function(grunt) {
     },
     concat: {
       dist: {
-        src: ['lib/propgrid.js', 'lib/item.js', 'lib/input_base.js', 'lib/show_base.js', 'lib/text.js', 'lib/select.js'],
+        src: ['lib/propgrid.js', 'lib/row.js', 'lib/value_base.js', 'lib/value_show_base.js', 'lib/value_edit_base.js', 'lib/text.js', 'lib/select.js'],
         dest: 'dist/propgrid_dist.js'
       }
     },
@@ -21,17 +31,22 @@ module.exports = function(grunt) {
         dest: 'dist/FILE_NAME.min.js'
       }
     },
+    cleanwhitespace: {
+      lib : {
+        src : '<config:concat.dist.src>'
+      }
+    },
     watch: {
       files: '<config:concat.dist.src>',
       tasks: 'concat'
     },
     jasmine : {
-      src : [ 
+      src : [
         'lib/vendor/json2.js',
         'lib/vendor/jquery-1.7.2.js',
         'lib/vendor/underscore-1.3.1.min.js',
         'lib/vendor/backbone-0.9.2-d862436d2e.js',
-        'lib//*.js' 
+        'lib//*.js'
       ],
       specs : 'spec/**/*.js'
     },
@@ -59,7 +74,8 @@ module.exports = function(grunt) {
         undef: true,
         boss: true,
         eqnull: true,
-        browser: true
+        browser: true,
+        multistr : true
       },
       globals: {
         jQuery: false,
@@ -82,4 +98,16 @@ module.exports = function(grunt) {
   grunt.registerTask('default', 'lint mocha');
   grunt.loadNpmTasks('grunt-jasmine-runner');
   grunt.loadNpmTasks('grunt-mocha');
+
+  grunt.registerMultiTask("cleanwhitespace", "Removes leading and trailing whitespace", function() {
+    var contents, files = grunt.file.expandFiles(this.file.src);
+
+    files.forEach(function(filepath) {
+      contents = grunt.task.directive(filepath, grunt.file.read);
+      grunt.file.write(filepath, contents.replace(/[\t ]+$/gm, ""));
+    })
+
+  });
+
+
 };

@@ -15,21 +15,21 @@ describe("Propgrid", function() {
     it("should create an editor for all model attributes", function() {
       var editor = new Propgrid({ model : model });
       var elEditor = editor.render().$el;
-      var propNames = elEditor.find("tr .propgrid-attr").map(function() {
-        return $(this).text();
+      var propNames = elEditor.find("tr").map(function() {
+        return $(this).data("attr");
       });
 
-      expect(propNames.get().sort()).to.equalAsSets(["Name", "Age", "State"].sort());
+      expect(propNames.get()).to.equalAsSets(["Name", "Age", "State"]);
     });
 
     it("should create an editor for specific model attributes", function() {
       var editor = new Propgrid({ model : model, attrs : [ "Name", "Age" ] });
       var elEditor = editor.render().$el;
-      var propNames = elEditor.find("tr .propgrid-attr").map(function() {
-        return $(this).text();
+      var propNames = elEditor.find("tr").map(function() {
+        return $(this).data("attr");
       });
 
-      expect(propNames.get().sort()).to.equalAsSets(["Name", "Age"].sort());
+      expect(propNames.get()).to.equalAsSets(["Name", "Age"]);
     });
 
   })
@@ -84,7 +84,7 @@ describe("Propgrid", function() {
           return $(this).val();
         });
 
-        expect(opts.get()).to.equalAsSets([ "CA", "MD", "WA" ].sort());
+        expect(opts.get()).to.equalAsSets([ "CA", "MD", "WA" ]);
 
       });
 
