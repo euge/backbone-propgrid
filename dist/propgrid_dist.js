@@ -52,7 +52,7 @@ Propgrid.Row = Backbone.View.extend({
     <td class='propgrid-value'> \
     </td>"
   ),
-  
+
   tagName : "tr",
 
   initialize : function() {
@@ -143,6 +143,13 @@ Propgrid.ValueShowBase = Propgrid.ValueBase.extend({
     "click" : "_onClick"
   },
 
+  constructor : function() {
+    Propgrid.ValueShowBase.__super__.constructor.apply(this, arguments);
+
+    // add show class
+    this.$el.addClass("propgrid-value-show");
+  },
+
   render : function() {
     this.$el.html(this.value());
     return this;
@@ -160,6 +167,13 @@ Propgrid.ValueEditBase = Propgrid.ValueBase.extend({
      "blur :input" : "_onBlur",
      "keyup :input" : "_onKeyUp",
      "keydown :input" : "_onKeyDown"
+   },
+
+   constructor : function() {
+     Propgrid.ValueEditBase.__super__.constructor.apply(this, arguments);
+
+     // add edit class
+     this.$el.addClass("propgrid-value-edit");
    },
 
   _onBlur : function(event) {
@@ -204,12 +218,12 @@ Propgrid.ValueEditBase = Propgrid.ValueBase.extend({
 Propgrid.Text = {};
 Propgrid.Text.Show = Propgrid.ValueShowBase.extend({
 
-  attributes : { "class" : "propgrid-value-show propgrid-value-show-text" }
+  attributes : { "class" : "propgrid-value-show-text" }
 
 });
 Propgrid.Text.Edit = Propgrid.ValueEditBase.extend({
 
-  attributes : { "class" : "propgrid-value-edit propgrid-value-edit-text" },
+  attributes : { "class" : "propgrid-value-edit-text" },
 
   render : function() {
     this.$el.html("<input type='text' value='" + this.value() + "'/>");
@@ -220,12 +234,12 @@ Propgrid.Text.Edit = Propgrid.ValueEditBase.extend({
 Propgrid.Select = {};
 Propgrid.Select.Show = Propgrid.ValueShowBase.extend({
 
-  attributes : { "class" : "propgrid-value-show propgrid-value-show-select" }
+  attributes : { "class" : "propgrid-value-show-select" }
 
 });
 Propgrid.Select.Edit = Propgrid.ValueEditBase.extend({
 
-  attributes : { "class" : "propgrid-value-edit propgrid-value-edit-select" },
+  attributes : { "class" : "propgrid-value-edit-select" },
 
   render : function() {
     var i, l, opt, currValue = this.value(),

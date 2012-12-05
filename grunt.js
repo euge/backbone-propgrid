@@ -1,4 +1,4 @@
-/*global module:false*/
+/*global module:false, require:false */
 module.exports = function(grunt) {
 
   var _inspect = require("sys").inspect;
@@ -8,7 +8,7 @@ module.exports = function(grunt) {
   }
 
   function log(stuff) {
-    grunt.log.writeln(stuff)
+    grunt.log.writeln(stuff);
   }
 
   // Project configuration.
@@ -94,20 +94,21 @@ module.exports = function(grunt) {
     uglify: {}
   });
 
-  // Default task.
-  grunt.registerTask('default', 'lint mocha');
   grunt.loadNpmTasks('grunt-jasmine-runner');
   grunt.loadNpmTasks('grunt-mocha');
 
+  grunt.registerTask('default', 'lint mocha');
+  grunt.registerTask('spec', "concat mocha");
   grunt.registerMultiTask("cleanwhitespace", "Removes leading and trailing whitespace", function() {
     var contents, files = grunt.file.expandFiles(this.file.src);
 
     files.forEach(function(filepath) {
       contents = grunt.task.directive(filepath, grunt.file.read);
       grunt.file.write(filepath, contents.replace(/[\t ]+$/gm, ""));
-    })
+    });
 
   });
+  grunt.registerTask("prep", "lint cleanwhitespace concat mocha");
 
 
 };
