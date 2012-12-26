@@ -3,6 +3,12 @@ var Propgrid = Backbone.View.extend({
   tagName : "table",
 
   attributes : { "class" : "propgrid" },
+  
+  initialize : function() {
+    _.bindAll(this, "_onBodyClick");
+    
+    $("body").on("click", this._onBodyClick);
+  },
 
   render : function() {
     var i, l, attrs = this.options.attrs, rowView;
@@ -25,6 +31,9 @@ var Propgrid = Backbone.View.extend({
       });
 
       rowView.on("next", this._onNext, this);
+      rowView.on("setActive", this._setActive, this);
+      rowView.on("unsetActive", this._unsetActive, this);
+      
       this.$el.append(rowView.render().$el);
       rowView.$el.data('rowView', rowView);
     }
@@ -38,6 +47,31 @@ var Propgrid = Backbone.View.extend({
     // make the next input enter its edit mode if it exists
     if (next) {
       next.edit();
+    }
+  },
+  
+  _setActive : function(newActiveRow) {
+    console.log(this._activeRow, newActiveRow);
+    
+    if (this._activeRow) {
+      this._activeRow.show();
+    }
+    
+    this._activeRow = newActiveRow;
+  },
+  
+  _unsetActive : function(row) {
+    // provided row is no longer the active one
+    if (this._activeRow === row) {
+      this._activeRow = null;
+    }
+  },
+  
+  _onBodyClick : function() {
+    // essentially a "blur" that causes the active row to transition to "show" mode
+    // when an unhandled click occurs
+    if (this._activeRow) {
+      this._activeRow.show();
     }
   }
 
@@ -54,7 +88,7 @@ Propgrid.Row = Backbone.View.extend({
   ),
 
   tagName : "tr",
-
+  
   initialize : function() {
     var klass = this._inputClass(),
         viewOpts = {
@@ -99,20 +133,26 @@ Propgrid.Row = Backbone.View.extend({
   },
 
   edit : function() {
+    console.log("edit")
+    this._state = "edit";
     this._showView.hide();
     this._editView.render().show().focus();
+    this.trigger("setActive", this);
   },
 
   show : function() {
+    console.log("show")
+    this._state = "show";
     this._editView.hide();
     this._showView.render().show();
+    this.trigger("unsetActive", this);
   },
 
   _onNext : function() {
     this.show();
     this.trigger("next", this);
   }
-
+  
 });
 Propgrid.ValueBase = Backbone.View.extend({
 
@@ -122,7 +162,7 @@ Propgrid.ValueBase = Backbone.View.extend({
   },
 
   show : function() {
-    this.$el.show();
+    this.$el.css("display", "inline-block");
     return this;
   },
 
@@ -139,10 +179,6 @@ Propgrid.ValueBase = Backbone.View.extend({
 });
 Propgrid.ValueShowBase = Propgrid.ValueBase.extend({
 
-  events : {
-    "click" : "_onClick"
-  },
-
   constructor : function() {
     Propgrid.ValueShowBase.__super__.constructor.apply(this, arguments);
 
@@ -153,18 +189,13 @@ Propgrid.ValueShowBase = Propgrid.ValueBase.extend({
   render : function() {
     this.$el.html(this.value());
     return this;
-  },
-
-  _onClick : function() {
-    this.trigger("edit");
-    return false;
   }
-
+  
 });
 Propgrid.ValueEditBase = Propgrid.ValueBase.extend({
 
   events : {
-     "blur :input" : "_onBlur",
+//     "blur :input" : "_onBlur",
      "keyup :input" : "_onKeyUp",
      "keydown :input" : "_onKeyDown"
    },
@@ -177,6 +208,7 @@ Propgrid.ValueEditBase = Propgrid.ValueBase.extend({
    },
 
   _onBlur : function(event) {
+    console.log("blur", event)
     // set the new value and leave the edit view
     this._save();
     this.trigger("show");
@@ -218,12 +250,32 @@ Propgrid.ValueEditBase = Propgrid.ValueBase.extend({
 Propgrid.Text = {};
 Propgrid.Text.Show = Propgrid.ValueShowBase.extend({
 
-  attributes : { "class" : "propgrid-value-show-text" }
+  attributes : { "class" : "propgrid-value-show-text" },
+  
+  events : {
+    "click" : "_onClick"
+  },
+  
+  _onClick : function(event) {
+    this.trigger("edit");
+    return false;
+  }
 
 });
 Propgrid.Text.Edit = Propgrid.ValueEditBase.extend({
 
   attributes : { "class" : "propgrid-value-edit-text" },
+  
+  events : {
+    "click" : "_onClick"
+  },
+  
+  _onClick : function(event) {
+    if (!$(event.target).is(":input")) {
+      this.trigger("show");
+      return false;
+    }
+  },
 
   render : function() {
     this.$el.html("<input type='text' value='" + this.value() + "'/>");
