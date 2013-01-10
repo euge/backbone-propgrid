@@ -1,1 +1,1 @@
-- [ ] Remove Jasmine
+[ ] Remove Jasmine
