@@ -11,51 +11,54 @@
     <link type="text/css" href="lib/vendor/bootstrap/css/bootstrap.css" rel="stylesheet" />
     <style type="text/css" media="screen">
       .propgrid {
+        margin-left:200px;
         margin-top:100px;
       }
-      .propgrid .propgrid-attr {
-        width:40px;
-        background-color:#ededed;
+      
+      .propgrid .propgrid-row {
+        height:40px;
+        background-color:red;
+        width:300px;
       }
       
-      .propgrid .propgrid-value-show {
+      .propgrid .propgrid-attr {
+        background-color:blue;
+        width:100px;
+        height:40px;
+        float:left; 
         overflow:hidden;
-        background-color:red;
-        height:100%;
-        width:100%;
-        display:inline-block;
       }
       
       .propgrid .propgrid-value {
-        padding:0;
+        background-color:green;
+        width:200px;
+        height:40px;
+        float:left;
+        overflow:hidden;
+      }
+      
+      .propgrid .propgrid-value-show {
+        background-color:red;
+        height:100%;
       }
       
       .propgrid .propgrid-value-edit {
-        background-color:blue;
+        background-color:purple;
         height:100%;
-        width:100%;
-        display:inline-block;
-      }
-      
-      
-      .propgrid tr {
-        height:50px;
-        background-color:yellow;
       }
       
       .propgrid input[type='text'] {
-        width:130px;
-        margin-bottom:0px;
+        width:80px;
       }
+      
     </style>
     
   </head>
 
-  <body>
+  <body>    
     <div class="container">
-      <div class="row">
-        <div class="span4" id="main"></div>
-      </div>
+      <div id='main'>
+      </div>      
     </div>
     <script type="text/javascript" src="lib/vendor/json2.js"></script>
     <script type="text/javascript" src="lib/vendor/jquery-1.7.2.js"></script>
@@ -64,11 +67,10 @@
     <script type="text/javascript" src="dist/propgrid_dist.js"></script>    
     <script>
       $(function() {
-        var model = new Backbone.Model({ bob : "joe", euge : 10, name : "a" });
+        var model = new Backbone.Model({ name : "josadasdasdas dashdjasdhjashd asjasdasdasdasdasdasjdhasjdhajs ashdjhasjdhasjdhjasdhjashdajsdhjasdad asjdhasjda sdhjashdjashjashdjahsdjahsdje", euge : 10, name : "sadddasdddddddddddddddddddd dddddddddddddddddddddddddddddddddddddddasdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddasdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddasdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddasdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddasddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddda" });
         var view = new Propgrid({ model : model });
-        
-        view.render().$el.addClass("table table-bordered");        
-        $("#main").append(view.$el);
+              
+        $("#main").append(view.render().$el);
       });
     </script>
   </body>

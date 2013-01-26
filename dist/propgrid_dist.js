@@ -1,12 +1,10 @@
 var Propgrid = Backbone.View.extend({
 
-  tagName : "table",
-
   attributes : { "class" : "propgrid" },
-  
+
   initialize : function() {
     _.bindAll(this, "_onBodyClick");
-    
+
     $("body").on("click", this._onBodyClick);
   },
 
@@ -33,7 +31,7 @@ var Propgrid = Backbone.View.extend({
       rowView.on("next", this._onNext, this);
       rowView.on("setActive", this._setActive, this);
       rowView.on("unsetActive", this._unsetActive, this);
-      
+
       this.$el.append(rowView.render().$el);
       rowView.$el.data('rowView', rowView);
     }
@@ -49,29 +47,27 @@ var Propgrid = Backbone.View.extend({
       next.edit();
     }
   },
-  
+
   _setActive : function(newActiveRow) {
-    console.log(this._activeRow, newActiveRow);
-    
     if (this._activeRow) {
-      this._activeRow.show();
+      this._activeRow.save().show();
     }
-    
+
     this._activeRow = newActiveRow;
   },
-  
+
   _unsetActive : function(row) {
     // provided row is no longer the active one
     if (this._activeRow === row) {
       this._activeRow = null;
     }
   },
-  
+
   _onBodyClick : function() {
     // essentially a "blur" that causes the active row to transition to "show" mode
     // when an unhandled click occurs
     if (this._activeRow) {
-      this._activeRow.show();
+      this._activeRow.save().show();
     }
   }
 
@@ -80,15 +76,12 @@ var Propgrid = Backbone.View.extend({
 Propgrid.Row = Backbone.View.extend({
 
   template : _.template("\
-    <td class='propgrid-attr'> \
-      <%= attr %> \
-    </td> \
-    <td class='propgrid-value'> \
-    </td>"
+    <div class='propgrid-attr'><%= attr %></div> \
+    <div class='propgrid-value'></div>"
   ),
 
-  tagName : "tr",
-  
+  attributes : { "class" : "propgrid-row" },
+
   initialize : function() {
     var klass = this._inputClass(),
         viewOpts = {
@@ -148,11 +141,25 @@ Propgrid.Row = Backbone.View.extend({
     this.trigger("unsetActive", this);
   },
 
+  save : function() {
+    if (this._state === "edit") {
+      this._editView.save();
+    }
+    return this;
+  },
+
+  blur : function() {
+    if (this._state === "edit") {
+      this._editView.blur();
+    }
+    return this;
+  },
+
   _onNext : function() {
     this.show();
     this.trigger("next", this);
   }
-  
+
 });
 Propgrid.ValueBase = Backbone.View.extend({
 
@@ -162,7 +169,7 @@ Propgrid.ValueBase = Backbone.View.extend({
   },
 
   show : function() {
-    this.$el.css("display", "inline-block");
+    this.$el.show();
     return this;
   },
 
@@ -190,40 +197,30 @@ Propgrid.ValueShowBase = Propgrid.ValueBase.extend({
     this.$el.html(this.value());
     return this;
   }
-  
+
 });
 Propgrid.ValueEditBase = Propgrid.ValueBase.extend({
 
-  events : {
-//     "blur :input" : "_onBlur",
-     "keyup :input" : "_onKeyUp",
-     "keydown :input" : "_onKeyDown"
-   },
+  constructor : function() {
+    this.events = _.extend(this.events || {}, {
+      "keyup :input" : "_onKeyUp",
+      "keydown :input" : "_onKeyDown"
+    });
 
-   constructor : function() {
-     Propgrid.ValueEditBase.__super__.constructor.apply(this, arguments);
+    Propgrid.ValueEditBase.__super__.constructor.apply(this, arguments);
 
-     // add edit class
-     this.$el.addClass("propgrid-value-edit");
-   },
-
-  _onBlur : function(event) {
-    console.log("blur", event)
-    // set the new value and leave the edit view
-    this._save();
-    this.trigger("show");
-    return false;
+    // add edit class
+    this.$el.addClass("propgrid-value-edit");
   },
 
   _onKeyUp : function(event) {
     if (event.keyCode === 27) {
       // handle the esc key event
-      this.trigger("show");
+      this.blur().trigger("show");
       return false;
     } else if (event.keyCode === 13) {
       // handle the enter key event
-      this._save();
-      this.trigger("show");
+      this.save().blur().trigger("show");
       return false;
     }
   },
@@ -231,14 +228,19 @@ Propgrid.ValueEditBase = Propgrid.ValueBase.extend({
   _onKeyDown : function(event) {
     if (event.keyCode === 9) {
       // handle the tab key event
-      this._save();
-      this.trigger("next");
-      return false;
+      event.preventDefault()
+      this.save().blur().trigger("next");
     }
   },
 
-  _save : function() {
+  save : function() {
     this.value(this.$(":input").val());
+    return this;
+  },
+
+  blur : function() {
+    this.$(":input").blur();
+    return this;
   },
 
   focus : function() {
@@ -251,11 +253,11 @@ Propgrid.Text = {};
 Propgrid.Text.Show = Propgrid.ValueShowBase.extend({
 
   attributes : { "class" : "propgrid-value-show-text" },
-  
+
   events : {
     "click" : "_onClick"
   },
-  
+
   _onClick : function(event) {
     this.trigger("edit");
     return false;
@@ -265,16 +267,17 @@ Propgrid.Text.Show = Propgrid.ValueShowBase.extend({
 Propgrid.Text.Edit = Propgrid.ValueEditBase.extend({
 
   attributes : { "class" : "propgrid-value-edit-text" },
-  
+
   events : {
     "click" : "_onClick"
   },
-  
+
   _onClick : function(event) {
     if (!$(event.target).is(":input")) {
-      this.trigger("show");
-      return false;
+      this.save().trigger("show");
     }
+
+    return false;
   },
 
   render : function() {
