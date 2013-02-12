@@ -81,6 +81,10 @@ Propgrid.Row = Backbone.View.extend({
   ),
 
   attributes : { "class" : "propgrid-row" },
+  
+  events : {
+    "click .propgrid-attr" : "_onAttrClick"
+  },
 
   initialize : function() {
     var klass = this._inputClass(),
@@ -158,6 +162,12 @@ Propgrid.Row = Backbone.View.extend({
   _onNext : function() {
     this.show();
     this.trigger("next", this);
+  },
+  
+  _onAttrClick : function() {
+    console.log(this.options.attr);
+    this.edit();
+    return false;
   }
 
 });
